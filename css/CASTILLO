@@ -1,0 +1,109 @@
+<!DOTYPE html>
+<html>
+<head>
+    <title>My Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // Set up the canvas
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width = 500;
+        const height = canvas.height = 500;
+
+        // Set up the player
+        let player = {
+            x: width / 2,
+            y: height - 50,
+            width: 50,
+            height: 50,
+            speed: 5
+        };
+
+        // Set up the enemies
+        let enemies = [];
+        const enemyWidth = 50;
+        const enemyHeight = 50;
+        const enemySpeed = 3;
+        for (let i = 0; i < 5; i++) {
+            let enemy = {
+                x: Math.random() * (width - enemyWidth),
+                y: Math.random() * -height,
+                width: enemyWidth,
+                height: enemyHeight
+            };
+            enemies.push(enemy);
+        }
+
+        // Set up the score
+        let score = 0;
+
+        // Set up the game loop
+        function loop() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Move the player
+            if (keys.left && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys.right && player.x < width - player.width) {
+                player.x += player.speed;
+            }
+
+            // Move the enemies and check for collisions
+            for (let i = 0; i < enemies.length; i++) {
+                enemies[i].y += enemySpeed;
+                if (enemies[i].y > height) {
+                    enemies[i].x = Math.random() * (width - enemyWidth);
+                    enemies[i].y = Math.random() * -height;
+                    score++;
+                }
+                if (collides(player, enemies[i])) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Draw the game
+            ctx.fillStyle = "blue";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = "red";
+            for (let i = 0; i < enemies.length; i++) {
+                ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
+            }
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
+
+            // Request the next frame
+            requestAnimationFrame(loop);
+        }
+
+        // Handle keyboard input
+        let keys = {};
+        document.addEventListener("keydown", function(event) {
+            keys[event.keyCode] = true;
+        });
+        document.addEventListener("keyup", function(event) {
+            keys[event.keyCode] = false;
+        });
+
+        // Check for collision between two rectangles
+        function collides(a, b) {
+            return a.x < b.x + b.width &&
+                   a.x + a.width > b.x &&
+                   a.y < b.y + b.height &&
+                   a.y + a.height > b.y;
+        }
+
+        // Game over function
+        function gameOver() {
+            alert("Game over
